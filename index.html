@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Find Path in Ukraine</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      img {
+        width: 60vmin;
+        border-radius: 14vmin;
+        border: solid #151515 2px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .dropdown {
+        margin-top: 20px;
+      }
+
+      p {
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="https://d-maps.com/m/europa/ukraine/ukraine/ukraine21.gif" alt="Ukraine Map" />
+    <!-- <img src="https://2001.ukrcensus.gov.ua/maps/e_ukr.gif" alt="Ukraine Map" /> -->
+
+    <h1>Find Path in Ukraine</h1>
+
+    <div class="dropdown">
+      <label for="region1">Select Region:</label>
+      <select onchange="refresh()" id="region1">
+        <!-- Generate options dynamically from regions object -->
+        <script>
+          const regions = {
+            CHK: ["CHK", "Cherkasy"],
+            CHN: ["CHN", "Chernivtsi"],
+            CHV: ["CHV", "Chernihiv"],
+            KRM: ["KRM", "Crimea"],
+            DNP: ["DNP", "Dnipropetrovsk"],
+            DON: ["DON", "Donetsk"],
+            IVA: ["IVA", "Ivano-Frankivsk"],
+            KHA: ["KHA", "Kharkiv"],
+            KHE: ["KHE", "Kherson"],
+            KHM: ["KHM", "Khmelnytskyi"],
+            KIE: ["KIE", "Kyiv"],
+            KIR: ["KIR", "Kirovohrad"],
+            LUH: ["LUH", "Luhansk"],
+            LVI: ["LVI", "Lviv"],
+            MYK: ["MYK", "Mykolaiv"],
+            ODE: ["ODE", "Odessa"],
+            POL: ["POL", "Poltava"],
+            RIV: ["RIV", "Rivne"],
+            SUM: ["SUM", "Sumy"],
+            TER: ["TER", "Ternopil"],
+            VIN: ["VIN", "Vinnytsia"],
+            VOL: ["VOL", "Volyn"],
+            ZAK: ["ZAK", "Zakarpattia"],
+            ZAP: ["ZAP", "Zaporizhia"],
+            ZHY: ["ZHY", "Zhytomyr"],
+            RUS: ["RUS", "Russia"],
+            BEL: ["BEL", "Belarus"],
+            HUN: ["HUN", "Hungary"],
+            SLO: ["SLO", "Slovakia"],
+            MOL: ["MOL", "Moldova"],
+            ROM: ["ROM", "Romania"],
+            PLN: ["PLN", "Poland"],
+          };
+
+          const graph = {
+            DON: ["LUH", "KHA", "DNP", "ZAP", "RUS"],
+            LUH: ["DON", "KHA", "RUS"],
+            KHA: ["DNP", "DON", "LUH", "SUM", "RUS"],
+            SUM: ["KHA", "CHV", "RUS"],
+            POL: ["SUM", "CHV", "KIE", "KHA", "DNP", "KIR", "CHK"],
+            ZAP: ["KHE", "DNP", "DON"],
+            KRM: ["KHE", "RUS"],
+            DNP: ["KHE", "DON", "ZAP", "KHA", "MYK", "KIR", "POL"],
+            KHE: ["ZAP", "DNP", "KRM"],
+            CHV: ["SUM", "KIE", "POL", "RUS", "BEL"],
+            KIE: ["CHV", "POL", "CHK", "VIN", "ZHY", "BEL"],
+            MYK: ["ODE", "KIR", "DNP", "KHE"],
+            ODE: ["MYK", "KIR", "VIN", "MOL", "ROM"],
+            VIN: ["ODE", "KIR", "CHK", "KIE", "ZHY", "KHM", "CHN", "MOL"],
+            CHK: ["KIE", "POL", "KIR", "VIN"],
+            KIR: ["ODE", "VIN", "CHK", "POL", "DNP", "MYK"],
+            ZHY: ["KIE", "VIN", "KHM", "RIV", "BEL"],
+            RIV: ["ZHY", "VOL", "LVI", "TER", "KHM", 'BEL'],
+            VOL: ["RIV", "LVI", 'BEL', 'PLN'],
+            LVI: ["VOL", "RIV", "TER", "IVA", "ZAK", 'PLN'],
+            ZAK: ["LVI", "IVA", 'PLN', 'HUN', 'SLO', 'ROM'],
+            IVA: ["ZAK", "LVI", "TER", "CHN", 'ROM'],
+            TER: ["LVI", "IVA", "CHN", "KHM", "RIV"],
+            KHM: ["CHN", "VIN", "ZHY", "TER", "RIV", "TER"],
+            CHN: ["IVA", "TER", "KHM", "VIN", 'ROM', 'MOL'],
+            RUS: ['KRM', 'DON', 'LUH', 'KHA', 'SUM', 'CHV', 'BEL', 'PLN'],
+            BEL: ['CHV', 'KIE', 'ZHY', 'RIV', 'VOL', 'RUS', 'PLN'],
+            HUN: ['ZAK', 'SLO', 'ROM'],
+            SLO: ['ZAK', 'HUN', 'PLN'],
+            MOL: ['CHN', 'VIN', 'ODE', 'ROM'],
+            ROM: ['ZAK', 'IVA', 'CHN', 'ODE', 'HUN', 'MOL'],
+            PLN: ['LVI', 'VOL', 'ZAK', 'BEL', 'SLO', 'RUS'],
+          };
+
+          const selectElement = document.getElementById("region1");
+
+          for (const key in regions) {
+            const [value, label] = regions[key];
+            const option = document.createElement("option");
+            option.value = value;
+            option.text = label;
+            selectElement.appendChild(option);
+          }
+        </script>
+      </select>
+    </div>
+
+    <div class="dropdown">
+      <label for="region2">Select Region:</label>
+      <select onchange="refresh()" id="region2">
+        <!-- Generate options dynamically from regions object -->
+        <script>
+          const selectElement2 = document.getElementById("region2");
+
+          for (const key in regions) {
+            const [value, label] = regions[key];
+            const option = document.createElement("option");
+            option.value = value;
+            option.text = label;
+            selectElement2.appendChild(option);
+          }
+        </script>
+      </select>
+    </div>
+
+    <p class="result">From Region -> To Region</p>
+
+    <script>
+      function shortestPath(graph, start, end) {
+        // Create a queue to hold the cities to visit
+        const queue = [];
+        queue.push([start]);
+
+        while (queue.length > 0) {
+          // Get the current path
+          const currentPath = queue.shift();
+          const currentCity = currentPath[currentPath.length - 1];
+
+          // Check if we reached the destination
+          if (currentCity === end) {
+            return currentPath;
+          }
+
+          // Get the neighbors of the current city
+          const neighbors = graph[currentCity];
+
+          // Iterate over the neighbors
+          for (const neighbor of neighbors) {
+            // Check if the neighbor has not been visited
+            if (!currentPath.includes(neighbor)) {
+              // Create a new path with the neighbor
+              const newPath = [...currentPath, neighbor];
+              // Add the new path to the queue
+              queue.push(newPath);
+            }
+          }
+        }
+
+        // If no path is found, return null
+        return null;
+      }
+
+      //   let i = 0
+      function refresh() {
+        const val1 = document.getElementById("region1").value;
+        const val2 = document.getElementById("region2").value;
+        document.querySelector(".result").textContent = shortestPath(
+          graph,
+          val1,
+          val2
+        )
+          .map((region) => regions[region][1])
+          .join(" -> ");
+        // document.querySelector(".result").textContent = i;
+        // i++
+      }
+    </script>
+  </body>
+</html>
