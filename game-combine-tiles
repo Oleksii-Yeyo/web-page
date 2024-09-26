@@ -1,0 +1,280 @@
+<!doctype html><html><head>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combine Tiles</title>
+  <link rel="stylesheet" href="styles.css">
+
+<style type="text/css">
+
+* {
+  user-select: none;
+}
+
+body {
+  background-color: #111;
+  color: #999;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+
+  height: 100vh;
+  height: 100svh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+font-size: 6vmin;
+
+}
+
+.pitch-wrapper {
+width: 80vmin;
+aspect-ratio: 1;
+
+position: relative;
+}
+
+.pitch {
+width: 100%;
+aspect-ratio: 1;
+
+background-color: #444;
+
+display: flex;
+flex-wrap: wrap;
+/* flex-direction: column; */
+}
+
+.tile {
+  height: 12.5%;
+  aspect-ratio: 1;
+  background-color: #444;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+cursor: pointer;
+transition: all 40ms ease;
+
+}
+
+.tile:hover {
+  /* background-color: #555; */
+  filter: brightness(1.4);
+}
+
+.selected {
+  background-color: #111;
+}
+
+.display {
+  width: 25%;
+  aspect-ratio: 1;
+  background-color: #111;
+  /* z-index: 2; */
+  
+  position: absolute;
+
+  top: 37.5%;
+  left: 37.5%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* font-size: 6vmin; */
+}
+
+.display.done {
+background-color: rgb(3, 32, 6);
+}
+
+/* dialog window */
+
+dialog {
+  border: none;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* font-family: Arial, sans-serif; */
+
+  text-align: right;
+}
+
+dialog h2 {
+  text-align: left; /* Keep text aligned to the left */
+  margin-bottom: 20px;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+button {
+  padding: 8px 12px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+
+  font-size: 6vmin;
+}
+
+button:hover {
+  background-color: #45a049;
+}</style></head><body><div class="game">
+	<div class="pitch-wrapper">
+		<div class="pitch" id="pitch">
+
+			<div class="display" id="display">
+				1≠0
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- <button id="openDialog">Open Dialog</button> -->
+
+<!-- Dialog Element -->
+<dialog id="myDialog">
+	<h2 id="dialogH2">Level 1</h2>
+	<!-- <p>complited!</p> -->
+	<!-- <button id="closeDialog">Close</button> -->
+	<button id="nextLevel">Next Level</button>
+</dialog><script type="text/javascript">const pitch = document.getElementById('pitch');
+const display = document.getElementById('display');
+const tiles = document.getElementsByClassName('tile');
+
+const dialog = document.getElementById('myDialog');
+// const closeDialogButton = document.getElementById('closeDialog');
+const nextLevelButton = document.getElementById('nextLevel');
+const dialogH2 = document.getElementById('dialogH2');
+
+const soundClick = new Audio('https://cdn.freesound.org/previews/623/623175_11545182-lq.ogg');  
+const soundNextLevel = new Audio('https://cdn.freesound.org/previews/619/619840_7614679-lq.ogg');
+const soundDone = new Audio('https://cdn.freesound.org/previews/506/506052_10991815-lq.ogg'); 
+
+const state = {
+  score: 0,
+  target: getRandomInt(8*2),
+  level: 1,
+}
+
+function nextLevelRefresh() {
+  state.level++;
+  state.score = 0;
+  state.target += getRandomInt();
+
+  for (const tile of tiles) {
+    tile.classList.remove('selected');
+    tile.textContent = parseInt((getRandomInt() + +tile.textContent) / 2);
+  }
+
+  // console.log('level-'+state.level)
+}
+
+function getRandomInt(to=8) {
+  return parseInt(Math.random() * to) + 1;
+}
+
+function createTiles() {
+  for (let i1 = 0; i1 < 64; i1++) {
+    const tile = document.createElement('div');
+    tile.classList.add('tile');
+    tile.textContent = getRandomInt();
+
+    // add sounds
+
+    
+      tile.addEventListener('click', () => {
+        // sound.stop();
+        soundClick.currentTime = 0;
+        soundClick.play();  // Play the sound when a tile is clicked
+      });
+    
+
+    pitch.appendChild(tile);
+  }
+}
+
+createTiles();
+
+
+
+function refresh(evnt, isAdding=true) {
+  if (isAdding) {state.score += +evnt?.target?.textContent || 0}
+  else { state.score -= +evnt?.target?.textContent}
+  // display.textContent = `${state.score}${state.score == state.target ? '=' : '≠'}${state.target}`;
+display.textContent = state.target - state.score;
+  if (display.textContent == '0' ) display.textContent = ''
+  if (state.score == state.target) {
+    
+    display.classList.add('done');
+    dialogH2.textContent = `Level ${state.level} Complited`
+
+    soundDone.currentTime = 0;
+    soundDone.play();
+
+    const timeOut1 = setTimeout(() => {
+      dialog.showModal();
+      soundNextLevel.currentTime = 0;
+      soundNextLevel.play();
+    }, 1e3)
+
+  } else {
+    display.classList.remove('done');
+  }
+
+}
+
+refresh();
+
+pitch.addEventListener('click', (event) => {
+  if (!event.target.classList.contains('tile')) {
+    return;
+  }
+
+  if (event.target.classList.contains('selected')) {
+    refresh(event, false);
+  } else {
+    refresh(event);
+  }
+  event.target.classList.toggle('selected');
+
+  
+})
+
+// dialog window
+
+// Get the dialog element
+
+
+// Get the buttons
+// const openDialogButton = document.getElementById('openDialog');
+
+
+// Open the dialog when the button is clicked
+// openDialogButton.addEventListener('click', () => {
+//   dialog.showModal(); // showModal() makes it a modal dialog
+// });
+
+// Close the dialog when the close button is clicked
+// closeDialogButton.addEventListener('click', () => {
+//   dialog.close();
+// });
+
+nextLevelButton.addEventListener('click', () => {
+  dialog.close();
+ nextLevelRefresh();
+  refresh();
+  
+});</script></body><html>
